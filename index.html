@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#081316">
+<meta name="description" content="North Pier Municipal Archive | An interactive fictional investigation.">
+<title>North Pier Municipal Archive — ECHO: ZERO</title>
+<style>
+:root{color-scheme:dark;font-family:ui-monospace,SFMono-Regular,Consolas,"Noto Sans Mono",monospace;background:#071014;color:#c6ded9}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 80% 0,#173038 0,#071014 55%);min-height:100vh}
+button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid #aaf5d1;outline-offset:3px}
+header{border-bottom:1px solid #34565a;background:#0b1c20;padding:16px max(20px,calc((100vw - 1050px)/2));display:flex;gap:18px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.logo{font-weight:800;letter-spacing:.09em;color:#b5e9d7}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#80d5a8;box-shadow:0 0 9px #64b99d;margin-right:8px}
+.muted{font-size:12px;color:#8daba9}main{max-width:1050px;margin:0 auto;padding:32px 20px 80px;display:grid;grid-template-columns:220px minmax(0,1fr);gap:30px}
+aside{border-right:1px solid #29474a;padding-right:16px}aside h2{color:#92bcb1;font-size:11px;letter-spacing:.2em;margin:0 0 20px}
+nav{display:grid;gap:7px}nav button{border:1px solid transparent;background:transparent;color:#a7c3be;text-align:left;padding:11px;border-radius:4px;font-size:12px}nav button.active{background:#19423d;border-color:#3b8874;color:#d9fff0}nav button:disabled{opacity:.32;cursor:not-allowed}
+article{min-height:560px}h1{font-size:clamp(24px,4vw,42px);line-height:1.25;letter-spacing:.02em;color:#dcfff0;margin:12px 0}h2{font-size:19px;color:#d1eee4}h3{font-size:15px;color:#d1eee4}p{line-height:1.85;font-size:14px;color:#c0d4d1}
+.kicker{font-size:11px;letter-spacing:.16em;color:#8ccab7}.en{display:block;font-size:12px;color:#88aaa8;margin-top:5px}
+.panel{border:1px solid #34575a;background:#102227;border-radius:5px;padding:18px 20px;margin:18px 0}.panel p:last-child{margin-bottom:0}
+.rule{height:1px;background:#315053;margin:20px 0}.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+input{min-width:0;max-width:100%;background:#071418;border:1px solid #5c8c80;color:#e6ffee;padding:12px;border-radius:4px;font-size:15px;letter-spacing:.06em}
+.primary{background:#9be1c6;color:#0b2724;border:1px solid #9be1c6;font-weight:800;padding:12px 16px;border-radius:4px}
+.secondary{background:#18332f;color:#c6eedd;border:1px solid #4b8575;padding:10px 14px;border-radius:4px}
+.status{padding:12px;border-left:3px solid #8ed4ab;background:#19342f;font-size:13px;margin:15px 0}.bad{border-color:#e39783;background:#392624;color:#ffd4c7}
+.log{display:grid;grid-template-columns:68px 1fr;gap:10px;padding:12px 4px;border-bottom:1px solid #2a4a4b;font-size:13px}.log strong,.cipher{color:#b6f2d1}
+.cipher{letter-spacing:.09em;font-size:17px;overflow-wrap:anywhere;background:#08191d;padding:18px;border:1px dashed #466f68}
+.map{display:grid;grid-template-columns:28px repeat(3,minmax(0,1fr));gap:5px;max-width:430px}.cell{border:1px solid #4d7772;background:#163337;min-height:72px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:6px;gap:4px;font-size:12px}.cell span{font-size:10px;color:#93b5ad}.axis{display:grid;place-items:center;color:#97c4b7;font-size:13px}
+details{border-top:1px dashed #486a67;margin-top:32px;padding-top:16px;font-size:12px;color:#9abeb5}summary{cursor:pointer}
+.progress{display:flex;gap:6px;margin:12px 0 25px}.progress span{height:4px;flex:1;background:#315052;border-radius:3px}.progress .done{background:#9be1c6}
+footer{font-size:11px;color:#71918f;border-top:1px solid #2b494a;padding:18px 20px;text-align:center}
+@media(max-width:700px){main{display:block;padding:18px 15px 60px}aside{border-right:0;border-bottom:1px solid #2a4b4b;padding:0 0 12px;margin-bottom:22px}aside h2{margin:0 0 8px}nav{display:flex;gap:4px;overflow-x:auto;padding-bottom:5px}nav button{white-space:nowrap;padding:8px 10px}header{padding:14px 15px}.panel{padding:14px}.cell{min-height:62px}}
+</style>
+</head>
+<body>
+<header><div class="logo"><span class="dot"></span>NORTH PIER / 北码头 <span class="muted">— ARCHIVE NODE 07</span></div><div class="muted">SYS: <span id="system">ONLINE</span> · <span id="progressLabel">0/4</span></div></header>
+<main><aside><h2>ARCHIVE DIRECTORY / 档案索引</h2><nav id="nav" aria-label="Archive sections"></nav><div class="rule"></div><button class="secondary" id="reset">重置调查 / Reset</button></aside>
+<article><div class="progress" id="bar"></div><div id="notice" role="status" aria-live="polite"></div><div id="view"></div>
+<details><summary>调查笔记 / Investigation Notebook</summary><div id="notebook"></div></details>
+</article></main>
+<footer>NODE 07 · ALL CHARACTERS, PLACES AND RECORDS ARE FICTIONAL · ECHO: ZERO / CHAPTER ONE</footer>
+<script>
+"use strict";
+(function(){
+const items=[["home","主页 / Home",0],["notices","公告 / Notices",0],["case","档案 / Case",1],["logs","日志 / Logs",1],["messages","通信 / Messages",2],["blueprint","平面图 / Blueprint",3],["ending","结局 / Ending",4]];
+let level=0,page="home",hint=0,flash="",failed=false;
+try{const saved=JSON.parse(localStorage.getItem("echozero-progress")||"null");if(saved&&Number.isInteger(saved.level)&&saved.level>=0&&saved.level<=4){level=saved.level;page=items.some(i=>i[0]===saved.page&&i[2]<=level)?saved.page:"home"}}catch(e){}
+const el=id=>document.getElementById(id);
+const headline=(k,t,en)=>'<div class="kicker">'+k+'</div><h1>'+t+'</h1><span class="en">'+en+'</span>';
+const panel=s=>'<section class="panel">'+s+'</section>';
+const form=(id,placeholder,label)=>'<form id="puzzle" class="row"><input id="answer" name="answer" type="text" autocomplete="off" spellcheck="false" aria-label="'+placeholder+'" placeholder="'+placeholder+'" required><button class="primary" type="submit">'+label+'</button></form>';
+const hints={
+notices:["公告中包含地点代码和日期。 / Look for the location code and date.","编号格式是 LOCATION-MMDD。 / The format is LOCATION-MMDD.","将 NP 与 0417 组合：NP-0417。 / Combine NP and 0417."],
+logs:["先把事件按时间升序排列。 / Sort timestamps from earliest to latest.","时间从 21:04、21:12、21:19 到 21:26。 / Use ascending timestamp order.","顺序读取 MARKER：3、7、1、9。 / Read markers in that order."],
+messages:["密码使用凯撒位移 3。 / The cipher uses a Caesar shift of three.","解密需要将字母向前移动三个位置。 / Move each letter back three places.","解密后是 THE DOOR IS BENEATH THE CLOCK。输入 CLOCK。 / Enter CLOCK."],
+blueprint:["解密的文字提到了一个时钟。 / The message names a clock.","在平面图里找到 Clock 房间。 / Find the room labeled Clock.","时钟位于 B 列 2 行，即 B2。 / The clock is at B2."]
+};
+const hintHTML=()=>'<div class="row" style="margin-top:16px"><button type="button" class="secondary" id="hint">线索提示 / Hint '+hint+'/3</button></div>'+(hint?panel('<p>'+hints[page][hint-1]+'</p>'):"");
+const screens={
+home:()=>headline("PUBLIC RECORDS ACCESS / OPEN DATA","北码头市政档案馆","NORTH PIER MUNICIPAL ARCHIVE")+panel('<h3>系统状态 / System status</h3><p>公共资料查询服务已恢复。历史档案存在部分缺失。请从公告索引获取事件编号。</p><span class="en">Public access has been restored. Some historical records are incomplete. Start with the notices to retrieve a case identifier.</span>')+panel('<h3>2019 年 4 月 / April 2019</h3><p>北码头设施停用记录 / North Pier facility closure</p><button class="primary" id="start">打开公告 / Open Notices</button>'),
+notices:()=>headline("PUBLIC NOTICE REGISTER · 2019","设施停用公告","FACILITY CLOSURE NOTICE")+panel('<h3>市政公告 / Municipal Notice</h3><p>发布日期 / Issued: <strong>2019-04-17</strong></p><p>位置代码 / Location code: <strong>NP</strong> (North Pier)</p><p>失踪事件档案已迁移至数字记录库。编号采用 LOCATION-MMDD 格式。</p><span class="en">The missing-person case was migrated to the digital archive. IDs use LOCATION-MMDD.</span>')+panel('<h3>搜索事件 / Search Case</h3>'+form("case","例如 / e.g. XX-0000","检索 / Search"))+hintHTML(),
+case:()=>headline("CASE FILE · NP-0417","林蔚失踪事件","THE DISAPPEARANCE OF LIN WEI")+panel('<p>状态 / STATUS: <strong>MISSING · 失踪</strong></p><p>最后记录 / LAST RECORDED: 2019-04-17 · 21:26</p><p>林蔚是市政档案中心夜班管理员。官方报告声称服务器没有异常，但一份未归档的备份留下了四条事件记录。</p><span class="en">Lin Wei worked as a night archivist. The official report claims no anomalies, but an unfiled backup contains four event records.</span>')+panel('<h3>内部备忘 / Internal memo</h3><p>“密码是四条日志的标记数字。按事件时间从早到晚排列，不要相信屏幕显示顺序。”</p><span class="en">"The passcode consists of four log markers. Sort by event time, earliest first. Do not trust display order."</span>')+'<button class="primary" id="inspect">查看恢复日志 / Inspect Logs</button>',
+logs:()=>headline("RECOVERED SERVER EVENTS","恢复事件日志","UNSORTED SYSTEM LOGS")+panel('<p>从损坏存储区恢复。显示顺序不代表实际发生顺序。 / Display order is not chronological.</p><div class="log"><strong>21:26</strong><span>MARKER <strong>9</strong> · External link lost / 连接断开</span></div><div class="log"><strong>21:12</strong><span>MARKER <strong>7</strong> · Backup power on / 后备电源</span></div><div class="log"><strong>21:04</strong><span>MARKER <strong>3</strong> · Credentials verified / 身份验证</span></div><div class="log"><strong>21:19</strong><span>MARKER <strong>1</strong> · Unknown transfer / 未知传输</span></div>')+panel('<h3>恢复权限 / Restore Access</h3>'+form("pin","四位密码 / 4-digit PIN","解锁 / Unlock"))+hintHTML(),
+messages:()=>headline("RECOVERED TRANSMISSION · CHANNEL 03","未发送的通信","UNSENT TRANSMISSION")+panel('<p>FROM: LIN.W → TO: UNKNOWN</p><p>系统将英文字母向后移动了三个位置（A→D）。恢复原文需要反向位移。</p><span class="en">Each letter was shifted forward by three (A→D). Reverse the shift to decode.</span><div class="cipher">WKH GRRU LV EHQHDWK WKH FORFN</div><p>输入解密后提及的物体（一个英文单词）。 / Enter the object named in the decoded message.</p>'+form("object","ENGLISH WORD","解密 / Decode"))+hintHTML(),
+blueprint:()=>{const rooms=[["A1","储藏室","Storage"],["B1","办公室","Office"],["C1","服务器","Server"],["A2","走廊","Hall"],["B2","时钟","Clock"],["C2","楼梯","Stairs"],["A3","出口","Exit"],["B3","档案室","Archive"],["C3","供电室","Power"]];let grid='<div class="map"><div></div><div class="axis">A</div><div class="axis">B</div><div class="axis">C</div>';for(let r=1;r<=3;r++){grid+='<div class="axis">'+r+'</div>';for(let c=0;c<3;c++){const room=rooms[(r-1)*3+c];grid+='<div class="cell"><strong>'+room[0]+'</strong>'+room[1]+'<span>'+room[2]+'</span></div>'}}grid+='</div>';return headline("FACILITY BLUEPRINT · B1","地下设施平面图","UNDERGROUND FACILITY PLAN")+panel('<p>每间房由字母列与数字行标记。 / Each room is identified by its column and row.</p>'+grid+'<div class="rule"></div><p>维修注释：“检修口隐藏在时钟正下方的地板里。”</p><span class="en">Maintenance: "The hatch is concealed in the floor beneath the clock."</span>')+panel('<h3>定位证据 / Locate the evidence</h3>'+form("room","房间坐标 / e.g. A1","进入 / Enter"))+hintHTML()},
+ending:()=>headline("EVIDENCE RECOVERED · FILE_000","证据已恢复","YOU FOUND THE FILE")+panel('<h2>第一章：零号回声 / Chapter One: Echo Zero</h2><p>你打开时钟下方的检修盖，发现了一枚离线存储芯片。其中只有一段林蔚的录音转录：</p><p><strong>“我没有失踪。我是被从系统中删除的。每当他们修改一份报告，现实中的一个人就会失去自己的记录。”</strong></p><span class="en">"I did not disappear. I was deleted from the system. Every time they alter a report, someone in the real world loses their record."</span>')+panel('<p>你找到了证据，但服务器刚刚记录了新的访问者。</p><span class="en">You found the evidence. The server has just recorded another visitor.</span><p style="color:#e5b699">VISITOR RECORD CREATED · 访问者记录已创建</p><h3>TO BE CONTINUED / 待续</h3>')+'<button class="secondary" id="replay">重新开始 / Play Again</button>'
+};
+function save(){try{localStorage.setItem("echozero-progress",JSON.stringify({page,level}))}catch(e){}}
+function go(p){const target=items.find(i=>i[0]===p);if(!target||target[2]>level)return;page=p;hint=0;flash="";save();render();window.scrollTo({top:0,behavior:"smooth"})}
+function advance(n,p){level=Math.max(level,n);page=p;hint=0;flash="验证成功 / ACCESS GRANTED";failed=false;save();render()}
+function bindPuzzle(answer,n,next){el("puzzle").addEventListener("submit",e=>{e.preventDefault();const val=el("answer").value.trim().toUpperCase().replace(/\s+/g,"");if(val===answer){advance(n,next)}else{flash="未通过验证，请重新检查证据。 / INVALID ENTRY. CHECK YOUR EVIDENCE.";failed=true;render();el("answer").focus()}})}
+function reset(){if(!confirm("确定要重置全部调查进度吗？ / Reset all investigation progress?"))return;level=0;page="home";hint=0;flash="";save();render()}
+function render(){
+el("nav").innerHTML=items.map(i=>'<button type="button" data-page="'+i[0]+'" class="'+(page===i[0]?"active":"")+'" '+(i[2]>level?"disabled":"")+'>'+i[1]+(i[2]>level?" · LOCKED":"")+'</button>').join("");
+el("bar").innerHTML=Array.from({length:4},(_,i)=>'<span class="'+(i<level?"done":"")+'"></span>').join("");
+el("progressLabel").textContent=level+"/4";el("system").textContent=level===4?"EVIDENCE RECOVERED":"ONLINE";
+el("notice").innerHTML=flash?'<div class="status '+(failed?"bad":"")+'">'+flash+'</div>':"";
+el("view").innerHTML=screens[page]();
+el("notebook").innerHTML='<p>☑ Public archive / 公共档案</p><p>'+(level>=1?"☑ NP-0417":"□ Case ID / 事件编号")+'</p><p>'+(level>=2?"☑ 3719":"□ Chronological log / 时间排序")+'</p><p>'+(level>=3?"☑ CLOCK":"□ Cipher / 加密消息")+'</p><p>'+(level>=4?"☑ B2":"□ Blueprint / 平面图")+'</p>';
+el("nav").querySelectorAll("button").forEach(b=>b.onclick=()=>go(b.dataset.page));
+if(page==="home")el("start").onclick=()=>go("notices");
+if(page==="notices")bindPuzzle("NP-0417",1,"case");
+if(page==="case")el("inspect").onclick=()=>go("logs");
+if(page==="logs")bindPuzzle("3719",2,"messages");
+if(page==="messages")bindPuzzle("CLOCK",3,"blueprint");
+if(page==="blueprint")bindPuzzle("B2",4,"ending");
+if(page==="ending")el("replay").onclick=reset;
+const h=el("hint");if(h)h.onclick=()=>{hint=Math.min(hint+1,3);render()};
+}
+el("reset").onclick=reset;render();
+})();
+</script>
+</body></html>
